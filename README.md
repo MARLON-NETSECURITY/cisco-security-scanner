@@ -45,7 +45,7 @@
 
 ### Installation
 ```bash
-git clone https://github.com/MARLON-NETSECURITY/cisco-security-scanner.git
+git clone https://github.com/marlon-netsecurity/cisco-security-scanner.git
 cd cisco-security-scanner
 python cisco_scanner.py --help
 ```
