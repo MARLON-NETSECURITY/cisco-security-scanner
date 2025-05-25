@@ -4,10 +4,9 @@
 
 [![Python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/MARLON-NETSECURITY/cisco-security-scanner.svg)](https://github.com/MARLON-NETSECURITY/cisco-security-scanner/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/marlon-netsecurity/cisco-security-scanner.svg)](https://github.com/marlon-netsecurity/cisco-security-scanner/stargazers)
 
 ## 🚨 Why This Matters
-
 **Network security audits are critical but time-consuming:**
 - Manual config review takes 4+ hours per device
 - 94% of enterprise networks have unaudited vulnerabilities  
