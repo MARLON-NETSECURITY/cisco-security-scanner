@@ -526,7 +526,7 @@ class CiscoConfigScanner:
 @click.option('--quiet', '-q', 
               is_flag=True, 
               help='Suppress console output except errors')
-@click.version_option(version='1.0.0', prog_name='Cisco Security Scanner')
+@click.version_option(version='1.1.0', prog_name='Cisco Security Scanner')
 def main(config_file, output_format, output, severity, quiet):
     """
     Cisco Configuration Security Scanner
@@ -540,7 +540,7 @@ def main(config_file, output_format, output, severity, quiet):
     """
     
     if not quiet:
-        click.echo("🔍 Cisco Configuration Security Scanner v1.0.0")
+        click.echo("🔍 Cisco Configuration Security Scanner v1.1.0")
         click.echo("=" * 50)
     
     # Initialize scanner
