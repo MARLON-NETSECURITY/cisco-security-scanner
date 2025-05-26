@@ -2,10 +2,12 @@
 """
 Cisco Configuration Security Scanner
 A tool to identify security vulnerabilities in Cisco router/switch configurations
+Marlon netsec
 """
 
 import re
 import json
+import click
 from datetime import datetime
 from dataclasses import dataclass
 from typing import List, Dict, Tuple
@@ -40,10 +42,10 @@ class CiscoConfigScanner:
             with open(config_path, 'r', encoding='utf-8', errors='ignore') as f:
                 self.config_lines = f.readlines()
             self.stats['total_lines'] = len(self.config_lines)
-            print(f"✓ Loaded config: {len(self.config_lines)} lines")
+            click.echo(f"✓ Loaded config: {len(self.config_lines)} lines")
             return True
         except Exception as e:
-            print(f"✗ Error loading config: {e}")
+            click.echo(f"✗ Error loading config: {e}", err=True)
             return False
     
     def load_config_text(self, config_text: str):
@@ -53,7 +55,7 @@ class CiscoConfigScanner:
     
     def scan_all(self) -> List[SecurityFinding]:
         """Run all security checks"""
-        print("🔍 Starting security scan...")
+        click.echo("🔍 Starting security scan...")
         
         # Reset findings
         self.findings = []
@@ -71,7 +73,7 @@ class CiscoConfigScanner:
         # Update statistics
         self._update_stats()
         
-        print(f"✓ Scan complete: {len(self.findings)} findings")
+        click.echo(f"✓ Scan complete: {len(self.findings)} findings")
         return self.findings
     
     def _add_finding(self, severity: str, category: str, title: str, 
@@ -508,15 +510,38 @@ class CiscoConfigScanner:
         
         return json.dumps(report_data, indent=2)
 
-def main():
-    """Main function for command-line usage"""
-    import sys
+@click.command()
+@click.argument('config_file', type=click.Path(exists=True))
+@click.option('--format', 'output_format', 
+              type=click.Choice(['text', 'json']), 
+              default='text',
+              help='Output format for the report')
+@click.option('--output', '-o', 
+              type=click.Path(), 
+              help='Save report to file')
+@click.option('--severity', 
+              type=click.Choice(['all', 'critical', 'high', 'medium', 'low']), 
+              default='all',
+              help='Filter findings by severity level')
+@click.option('--quiet', '-q', 
+              is_flag=True, 
+              help='Suppress console output except errors')
+@click.version_option(version='1.0.0', prog_name='Cisco Security Scanner')
+def main(config_file, output_format, output, severity, quiet):
+    """
+    Cisco Configuration Security Scanner
     
-    if len(sys.argv) != 2:
-        print("Usage: python cisco_scanner.py <config_file>")
-        sys.exit(1)
+    Analyzes Cisco router and switch configurations for security vulnerabilities.
     
-    config_file = sys.argv[1]
+    Example usage:
+        python cisco_scanner.py config.txt
+        python cisco_scanner.py config.txt --format json --output report.json
+        python cisco_scanner.py config.txt --severity critical
+    """
+    
+    if not quiet:
+        click.echo("🔍 Cisco Configuration Security Scanner v1.0.0")
+        click.echo("=" * 50)
     
     # Initialize scanner
     scanner = CiscoConfigScanner()
@@ -525,31 +550,38 @@ def main():
     if scanner.load_config(config_file):
         findings = scanner.scan_all()
         
-        # Generate and display report
-        report = scanner.generate_report('text')
-        print("\n" + report)
+        # Filter findings by severity
+        if severity != 'all':
+            findings = [f for f in findings if f.severity.lower() == severity.lower()]
         
-        # Save report to file
-        report_file = f"security_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-        with open(report_file, 'w') as f:
-            f.write(report)
+        # Generate report
+        report = scanner.generate_report(output_format)
         
-        print(f"\n📄 Report saved to: {report_file}")
+        # Output report
+        if output:
+            with open(output, 'w') as f:
+                f.write(report)
+            if not quiet:
+                click.echo(f"\n📄 Report saved to: {output}")
+        else:
+            if not quiet:
+                click.echo("\n" + report)
         
         # Summary
-        critical_count = scanner.stats['critical']
-        high_count = scanner.stats['high']
-        
-        if critical_count > 0:
-            print(f"\n🚨 URGENT: {critical_count} critical security issues found!")
-        elif high_count > 0:
-            print(f"\n⚠️  WARNING: {high_count} high-risk issues found!")
-        else:
-            print(f"\n✅ Good: No critical security issues detected")
+        if not quiet:
+            critical_count = scanner.stats['critical']
+            high_count = scanner.stats['high']
+            
+            if critical_count > 0:
+                click.echo(f"\n🚨 URGENT: {critical_count} critical security issues found!", err=True)
+            elif high_count > 0:
+                click.echo(f"\n⚠️  WARNING: {high_count} high-risk issues found!")
+            else:
+                click.echo(f"\n✅ Good: No critical security issues detected")
     
     else:
-        print("Failed to load configuration file")
-        sys.exit(1)
+        click.echo("Failed to load configuration file", err=True)
+        raise click.Abort()
 
 if __name__ == "__main__":
     main()
